@@ -1,0 +1,384 @@
+"use client";
+
+import { MainLayout } from "@/components/layout/main-layout";
+import { Button } from "@/components/ui/button";
+import { Plus, MoreVertical } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { customerAPI } from "@/lib/api";
+
+interface Customer {
+  _id: string;
+  vehicle: {
+    companyName: string;
+    model: string;
+    chassisNumber: string;
+  };
+  customer: {
+  name: string;
+    phoneNumber: string;
+    email?: string;
+    address?: string;
+  };
+  sale: {
+    saleDate: string;
+    salePrice: number;
+    paidAmount: number;
+    remainingAmount: number;
+    paymentMethod: {
+      type: string;
+      details?: {
+        bankName?: string;
+        ibanNo?: string;
+        accountNo?: string;
+        chequeNo?: string;
+        chequeClearanceDate?: string;
+        slipNo?: string;
+      };
+    };
+    paymentStatus: string;
+    note?: string;
+    document?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function RemainingBalancePage() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 11;
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await customerAPI.getAll();
+      
+      if (response.success) {
+        setCustomers(response.data);
+        console.log("Customers fetched successfully:", response.data);
+      } else {
+        setError(response.error || "Failed to fetch customers");
+      }
+    } catch (error: any) {
+      console.error("Error fetching customers:", error);
+      setError(error.message || "An error occurred while fetching customers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(customers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = customers.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleAddNewCustomer = () => {
+    console.log("Add new customer clicked");
+    // TODO: Implement add new customer functionality
+  };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading remaining balance data...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Error: {error}</p>
+            <button 
+              onClick={fetchCustomers}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  return (
+    <MainLayout>
+      <div className="space-y-5 pt-6">
+        {/* Header with Remaining Balance heading and Add button - aligned with table */}
+        <div className="bg-white">
+          <div className="flex items-center justify-between">
+            <h1 className="text-gray-900 font-semibold" style={{
+              fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+              fontWeight: 600,
+              fontStyle: 'normal',
+              fontSize: '22px',
+              lineHeight: '30px',
+              letterSpacing: '0%'
+            }}>
+              Remaining Balance
+            </h1>
+            <Button 
+              onClick={handleAddNewCustomer}
+              className="flex items-center border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              style={{
+                width: '200px',
+                height: '50px',
+                borderRadius: '50px',
+                paddingTop: '10px',
+                paddingRight: '10px',
+                paddingBottom: '10px',
+                paddingLeft: '10px',
+                gap: '10px',
+                borderWidth: '1px',
+                opacity: 1
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Add New Customer
+            </Button>
+          </div>
+        </div>
+
+        {/* Search and Filter Section */}
+        <div className="bg-white">
+          <div className="flex items-center justify-between">
+            <div className="flex gap-2">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input 
+                  placeholder="Search customers..." 
+                  className="pl-14"
+                  style={{
+                    width: "300px",
+                    height: "41px",
+                    borderRadius: "12px",
+                    gap: "10px",
+                    padding: "12px",
+                    borderWidth: "1px"
+                  }}
+                />
+              </div>
+
+              <Button 
+                variant="outline" 
+                size="sm"
+                style={{
+                  height: "41px",
+                  borderRadius: "12px",
+                  gap: "10px",
+                  padding: "12px",
+                  borderWidth: "1px"
+                }}
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Filter
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              <Select>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Company" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tesla">Tesla</SelectItem>
+                  <SelectItem value="ford">Ford</SelectItem>
+                  <SelectItem value="bmw">BMW</SelectItem>
+                  <SelectItem value="audi">Audi</SelectItem>
+                  <SelectItem value="mercedes">Mercedes</SelectItem>
+                  <SelectItem value="porsche">Porsche</SelectItem>
+                  <SelectItem value="jaguar">Jaguar</SelectItem>
+                  <SelectItem value="volvo">Volvo</SelectItem>
+                  <SelectItem value="land-rover">Land Rover</SelectItem>
+                  <SelectItem value="nissan">Nissan</SelectItem>
+                  <SelectItem value="hyundai">Hyundai</SelectItem>
+                  <SelectItem value="chevrolet">Chevrolet</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select>
+                <SelectTrigger className="w-24">
+                  <SelectValue placeholder="Grade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="4">4</SelectItem>
+                  <SelectItem value="3">3</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Import Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2026">2026</SelectItem>
+                  <SelectItem value="2025">2025</SelectItem>
+                  <SelectItem value="2024">2024</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select>
+                <SelectTrigger className="w-28">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Remaining Balance Table with fixed height and pagination */}
+            <div className="bg-white rounded-lg border border-gray-200">
+          <div style={{ overflow: 'hidden' }}>
+            <div className="[&_.relative]:overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow style={{ height: '45px' }}>
+                    <TableHead style={{ padding: '8px 16px', color: '#00000099', textAlign: 'left' }}>Sr.No</TableHead>
+                    <TableHead style={{ padding: '8px 16px', color: '#00000099', textAlign: 'left' }}>Name</TableHead>
+                    <TableHead style={{ padding: '8px 16px', color: '#00000099', textAlign: 'left' }}>Chassis Number</TableHead>
+                    <TableHead style={{ padding: '8px 16px', color: '#00000099', textAlign: 'left' }}>Cars Purchased</TableHead>
+                    <TableHead style={{ padding: '8px 16px', color: '#00000099', textAlign: 'left' }}>Last Purchased Date</TableHead>
+                    <TableHead style={{ padding: '8px 16px', color: '#00000099', textAlign: 'left' }}>Total Spend</TableHead>
+                    <TableHead style={{ padding: '8px 16px', color: '#00000099', textAlign: 'left' }}>Remaining Balance</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentItems.map((customer, index) => (
+                    <TableRow key={customer._id} style={{ height: '40px' }}>
+                      <TableCell style={{ padding: '8px 16px', textAlign: 'left' }}>
+                        {startIndex + index + 1}
+                      </TableCell>
+                      <TableCell style={{ padding: '8px 16px', textAlign: 'left' }}>
+                        {customer.customer.name || 'N/A'}
+                      </TableCell>
+                      <TableCell style={{ padding: '8px 16px', textAlign: 'left' }}>
+                        {customer.vehicle.chassisNumber || 'N/A'}
+                      </TableCell>
+                      <TableCell style={{ padding: '8px 16px', textAlign: 'left' }}>
+                        {customer.vehicle.companyName && customer.vehicle.model 
+                          ? `${customer.vehicle.companyName} ${customer.vehicle.model}`
+                          : 'N/A'
+                        }
+                      </TableCell>
+                      <TableCell style={{ padding: '8px 16px', textAlign: 'left' }}>
+                        {customer.sale.saleDate ? new Date(customer.sale.saleDate).toLocaleDateString() : 'N/A'}
+                      </TableCell>
+                      <TableCell style={{ padding: '8px 16px', textAlign: 'left' }}>
+                        Rs {(customer.sale.salePrice || 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell style={{ padding: '8px 16px', textAlign: 'left' }}>
+                        <div className="flex items-center justify-between">
+                          <span style={{ color: '#FF0000' }}>
+                            Rs {(customer.sale.remainingAmount || 0).toLocaleString()}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            style={{
+                              display: 'flex',
+                              padding: '4px',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              borderRadius: '1000px',
+                              color: '#000000',
+                              border: 'none'
+                            }}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+          {/* Pagination */}
+          <div className="flex flex-col items-center justify-center py-4">
+            <div className="flex items-center gap-4 justify-center">
+              <button
+                className="p-2 text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4" />
+              </button>
+              
+              {/* Page numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  className={`text-sm ${
+                    currentPage === page
+                      ? 'bg-[#00674F] text-white'
+                      : 'text-black bg-transparent'
+                  }`}
+                  style={{
+                    width: '26px',
+                    height: '25px',
+                    borderRadius: '1000px',
+                    opacity: 1,
+                    padding: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              ))}
+              
+              <button
+                className="p-2 text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                <FontAwesomeIcon icon={faChevronRight} className="w-4 h-4" />
+              </button>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
