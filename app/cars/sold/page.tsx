@@ -6,7 +6,7 @@ import { CarTable } from "@/components/ui/car-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { carAPI, customerAPI } from "@/lib/api";
 import { Plus, X, ArrowLeft, Upload, FileText, ChevronDown, Search, Filter } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -54,7 +54,7 @@ interface SoldCarFormData {
   additionalDocuments: File[];
 }
 
-export default function SoldCarsPage() {
+function SoldCarsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [soldCars, setSoldCars] = useState<any[]>([]);
@@ -1304,5 +1304,22 @@ export default function SoldCarsPage() {
         </div>
       )}
     </MainLayout>
+  );
+}
+
+export default function SoldCarsPage() {
+  return (
+    <Suspense fallback={
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading sold cars...</p>
+          </div>
+        </div>
+      </MainLayout>
+    }>
+      <SoldCarsContent />
+    </Suspense>
   );
 }

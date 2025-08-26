@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { ArrowLeft, X, Upload, Loader2, FileText, Trash2, Image as ImageIcon, ChevronRight, ChevronDown } from "lucide-react";
 import { carAPI } from "@/lib/api";
 import FlagDropdown from "@/components/ui/flag-dropdown";
@@ -18,7 +18,7 @@ interface AddCarPageProps {
   };
 }
 
-export default function AddCarPage({ params }: AddCarPageProps) {
+function AddCarContent({ params }: AddCarPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { batchNumber } = params;
@@ -2127,5 +2127,22 @@ export default function AddCarPage({ params }: AddCarPageProps) {
         </div>
       </div>
     </MainLayout>
+  );
+}
+
+export default function AddCarPage({ params }: AddCarPageProps) {
+  return (
+    <Suspense fallback={
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading add car form...</p>
+          </div>
+        </div>
+      </MainLayout>
+    }>
+      <AddCarContent params={params} />
+    </Suspense>
   );
 }
