@@ -35,13 +35,13 @@ export default function CarsManagementPage() {
         // Calculate stats
         const totalCars = carsData.length
         const availableCars = carsData.filter((car: any) => 
-          car.status === "warehouse" || car.status === "showroom"
+          car.status === "available" || car.status === "warehouse" || car.status === "Available" || car.status === "Warehouse"
         ).length
         const carsInTransit = carsData.filter((car: any) => 
-          car.status === "transit"
+          car.status === "in_transit" || car.status === "In Transit"
         ).length
         const soldCars = carsData.filter((car: any) => 
-          car.status === "sold"
+          car.status === "sold" || car.status === "Sold"
         ).length
 
         setStats({
@@ -124,7 +124,7 @@ export default function CarsManagementPage() {
           <BatchHeader title="All Cars" onAddNew={handleAddNewCar} showFilters={true} />
 
           <div className="mt-6">
-            <CarTable cars={cars} batchNumber="all" />
+            <CarTable cars={cars} batchNumber={""} />
           </div>
 
           {/* Pagination */}
