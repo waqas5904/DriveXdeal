@@ -359,3 +359,74 @@ export const customerAPI = {
     };
   },
 };
+
+// User API functions
+export const userAPI = {
+  // Get all users with optional filters
+  getAll: async (filters?: {
+    search?: string;
+    limit?: number;
+    page?: number;
+  }) => {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, value.toString());
+        }
+      });
+    }
+    
+    const queryString = params.toString();
+    const endpoint = `/users${queryString ? `?${queryString}` : ''}`;
+    
+    return apiRequest(endpoint);
+  },
+
+  // Get a specific user by ID
+  getById: async (id: string) => {
+    return apiRequest(`/users/${id}`);
+  },
+
+  // Create a new user
+  create: async (userData: any) => {
+    return apiRequest('/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  },
+
+  // Update a user
+  update: async (id: string, userData: any) => {
+    return apiRequest(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
+  },
+
+  // Delete a user
+  delete: async (id: string) => {
+    return apiRequest(`/users/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Format user data for display
+  formatUserData: (user: any) => {
+    return {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      profilePicture: user.profilePicture,
+      phone: user.phone,
+      address: user.address,
+      department: user.department,
+      isActive: user.isActive,
+      lastLogin: user.lastLogin,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  },
+};

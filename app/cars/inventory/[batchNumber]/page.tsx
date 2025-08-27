@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { carAPI } from "@/lib/api";
+import { carAPI, batchAPI } from "@/lib/api";
 import type { Car } from "@/types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 interface BatchDetailPageProps {
   params: {
@@ -20,8 +22,11 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
   const { batchNumber } = params;
   console.log("BatchDetailPage received batchNumber:", batchNumber);
   const [cars, setCars] = useState<any[]>([]);
+  const [allBatches, setAllBatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const carsPerPage = 9;
 
   useEffect(() => {
     fetchCars();
@@ -32,13 +37,23 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
       setLoading(true);
       setError(null);
       
-      // Fetch cars for this specific batch
-      const response = await carAPI.getAll({ batchNo: batchNumber });
+      console.log("Fetching cars for batch number:", batchNumber);
       
-      if (response.success) {
-        setCars(response.data);
+      // Fetch cars for this specific batch and all batches in parallel
+      const [carsResponse, batchesResponse] = await Promise.all([
+        carAPI.getAll({ batchNo: batchNumber }),
+        batchAPI.getAll()
+      ]);
+      
+      console.log("API response:", carsResponse);
+      
+      if (carsResponse.success && batchesResponse.success) {
+        setCars(carsResponse.data);
+        setAllBatches(batchesResponse.data);
+        console.log("Cars loaded:", carsResponse.data.length);
       } else {
-        setError(response.error || "Failed to fetch cars");
+        console.error("API error:", carsResponse.error);
+        setError(carsResponse.error || "Failed to fetch cars");
       }
     } catch (error: any) {
       console.error("Error fetching cars:", error);
@@ -56,9 +71,35 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
     console.log("View car:", car);
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(cars.length / carsPerPage);
+  const startIndex = (currentPage - 1) * carsPerPage;
+  const endIndex = startIndex + carsPerPage;
+  const currentCars = cars.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   const handleAddNewCar = () => {
     router.push(`/cars/inventory/${batchNumber}/add-car`);
   };
+
+  // Check if this batch is the latest one
+  const isLatestBatch = () => {
+    if (allBatches.length === 0) return false;
+    
+    // Sort batches by batch number (latest first)
+    const sortedBatches = allBatches.sort((a: any, b: any) => {
+      const numA = parseInt(a.batchNo.replace(/\D/g, ''));
+      const numB = parseInt(b.batchNo.replace(/\D/g, ''));
+      return numB - numA;
+    });
+    
+    return sortedBatches[0]?.batchNo === batchNumber;
+  };
+
+
 
   if (loading) {
     return (
@@ -98,7 +139,7 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
           {/* Header Section with Navigation */}
           <div className="flex items-center justify-between">
             <div 
-              className="flex items-center"
+              className="flex items-center gap-2"
               style={{
                 width: '604.5px',
                 height: '30px',
@@ -109,6 +150,33 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
               <span className="text-gray-600">All Inventory</span>
               <i className="fas fa-chevron-right text-gray-400 text-sm"></i>
               <span className="font-medium">Batch {batchNumber}</span>
+              
+              {isLatestBatch() && (
+                <div
+                  style={{
+                    width: '102px',
+                    height: '25px',
+                    borderRadius: '1000px',
+                    opacity: 1,
+                    gap: '10px',
+                    paddingTop: '4px',
+                    paddingRight: '10px',
+                    paddingBottom: '4px',
+                    paddingLeft: '10px',
+                    background: '#00674F1F',
+                    color: '#00674F',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Latest Batch
+                </div>
+              )}
+              
+
             </div>
             <Button 
               className="flex items-center gap-2.5 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
@@ -178,28 +246,59 @@ export default function BatchDetailPage({ params }: BatchDetailPageProps) {
 
           {/* Car Table */}
           <div className="mt-6">
-            <CarTable
-              cars={cars}
-              batchNumber={batchNumber}
-              onDelete={handleDeleteCar}
-              onView={handleViewCar}
-            />
+            <div style={{ height: '710px', overflow: 'hidden' }}>
+              <CarTable
+                cars={currentCars}
+                batchNumber={batchNumber}
+                onDelete={handleDeleteCar}
+                onView={handleViewCar}
+              />
+            </div>
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
-              Showing 1 to {cars.length} of {cars.length} results
-            </p>
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center gap-4 justify-center">
               <button
-                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-                disabled
+                className="p-2 text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
               >
-                Previous
+                <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4" />
               </button>
-              <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded">1</button>
-              <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">Next</button>
+              
+              {/* Page numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  className={`text-sm ${
+                    currentPage === page
+                      ? 'bg-[#00674F] text-white'
+                      : 'text-black  bg-transparent'
+                  }`}
+                  style={{
+                    width: '26px',
+                    height: '25px',
+                    borderRadius: '1000px',
+                    opacity: 1,
+                    padding: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              ))}
+              
+              <button
+                className="p-2 text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                <FontAwesomeIcon icon={faChevronRight} className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>

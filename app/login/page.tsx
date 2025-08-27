@@ -3,67 +3,84 @@
 import { useState } from "react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
+  const [email, setEmail] = useState("johndoe@gmail.com");
+  const [password, setPassword] = useState("••••••••");
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Email: ${email}\nPassword: ${password}\nRemember me: ${remember}`);
+    console.log("Login attempt:", { email, password, rememberMe });
   };
 
   return (
-    <div className="flex bg-black h-screen justify-center items-center w-screen gap-0 font-sans">
-      <div className="w-[824px] h-[838px] bg-white  rounded-2xl border border-gray  overflow-hidden flex justify-center items-center">
-        <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-start">Welcome!</h1>
-          <p className="text-start">Please login to access System Administrator Portal</p>
+    <div className="min-h-screen flex flex-col md:flex-row bg-black p-2">
+      
+      {/* White form card */}
+      <div className="w-full md:w-[60%] bg-white flex items-center justify-center rounded-xl">
+        <div className="w-4/5 md:w-3/5 flex flex-col justify-center py-10">
+          {/* Welcome message */}
+          <div className="pb-6 text-left">
+            <h1 className="text-3xl font-bold text-black mb-2">Welcome!</h1>
+            <p className="text-black-400">
+              Please login to access System Administrator Portal
+            </p>
+          </div>
 
-          <label htmlFor="email" className="block mb-1 font-medium">Email address</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full p-2.5 border border-gray-300 rounded"
-          />
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-black-400">
+                Email address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500"
+                required
+              />
+            </div>
 
-          <label htmlFor="password" className="block mb-1 font-medium">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full p-2.5 border border-gray-300 rounded"
-          />
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-black-400">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500"
+                required
+              />
+            </div>
 
-          <label className="flex items-center mb-6 mt-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={remember}
-              onChange={(e) => setRemember(e.target.checked)}
-              className="mr-2 w-4 h-4 rounded border-gray-300"
-            />
-            <span className="text-gray-600 text-sm">Remember me</span>
-          </label>
+            <div className="flex items-center space-x-2">
+              <input
+                id="remember"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-green-600 border-gray-400 rounded focus:ring-green-700"
+              />
+              <label htmlFor="remember" className="text-sm text-black-600">
+                Remember me
+              </label>
+            </div>
 
-          <button
-            type="submit"
-            className="w-full p-3 bg-green-800 text-white rounded-full text-lg cursor-pointer hover:bg-green-700 transition"
-          >
-            Login
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="w-full bg-green-900 hover:bg-orange-500 text-white font-medium py-2 px-4 rounded-3xl transition-colors duration-200"
+            >
+              Login
+            </button>
+          </form>
+        </div>
       </div>
 
-      <div className="w-[829px] h-[838px] rounded-2xl">
-  <img src="/Ltext.png" alt="DriveX Deals" className="w-[829px] h-[838px] rounded-2xl" />
-  
-</div>
-
-
+      {/* Black area (hidden on mobile) */}
+      <div className="hidden md:block w-[40%]"></div>
     </div>
   );
 }

@@ -81,7 +81,7 @@ const navigation = [
   },
   { 
     name: "Settings", 
-    href: "#", 
+    href: "/setting", 
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="23" viewBox="0 0 22 23" fill="none">
         <path d="M9.56741 5.1595C9.93222 3.65679 12.0693 3.65679 12.4342 5.1595C12.6698 6.13023 13.782 6.5909 14.635 6.07113C15.9556 5.26652 17.4667 6.77769 16.6621 8.09823C16.1423 8.95128 16.603 10.0634 17.5738 10.2991C19.0765 10.6639 19.0765 12.801 17.5738 13.1658C16.603 13.4015 16.1423 14.5137 16.6621 15.3667C17.4667 16.6872 15.9556 18.1984 14.635 17.3938C13.782 16.874 12.6698 17.3347 12.4342 18.3054C12.0693 19.8081 9.93222 19.8081 9.56741 18.3054C9.33174 17.3347 8.21959 16.874 7.36654 17.3938C6.04601 18.1984 4.53483 16.6872 5.33944 15.3667C5.85921 14.5137 5.39854 13.4015 4.42781 13.1658C2.9251 12.801 2.9251 10.6639 4.42781 10.2991C5.39854 10.0634 5.85921 8.95128 5.33944 8.09823C4.53483 6.77769 6.04601 5.26651 7.36654 6.07113C8.21959 6.5909 9.33174 6.13023 9.56741 5.1595Z" stroke="black" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round"/>
@@ -108,7 +108,7 @@ export function Sidebar() {
     <div 
       style={{
         display: 'inline-flex',
-        height: '869px',
+        height: '800px',
         padding: '24px 14px 40px 14px',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -353,6 +353,8 @@ export function Sidebar() {
           display: 'flex',
           alignItems: 'center',
           gap: '15px',
+          alignSelf:'flex-start',
+          marginLeft:'10px'
         }}
       >
         <div 
@@ -386,7 +388,7 @@ export function Sidebar() {
               fontSize: '10px',
               fontStyle: 'normal',
               fontWeight: 600,
-              lineHeight: '120%',
+              lineHeight: '150%',
             }}
           >
             romail@drivexdeals.com

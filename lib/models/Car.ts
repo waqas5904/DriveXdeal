@@ -22,7 +22,7 @@ const carSchema = new mongoose.Schema(
     },
 
     engineNumber: { type: String, required: true, trim: true },
-    chasisNumber: { type: String, required: true, trim: true },
+    chasisNumber: { type: String, required: true, trim: true , unique: true},
     auctionGrade: { type: Number, required: true, min: 1, max: 5 },
     importYear: {
       type: Number,

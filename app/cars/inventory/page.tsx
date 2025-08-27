@@ -71,15 +71,7 @@ export default function InventoryPage() {
   // Filter cars by batch number
   const getCarsForBatch = (batchNumber: string) => {
     return cars.filter(car => {
-      // Check if car has batchNo as string or ObjectId
-      if (typeof car.batchNo === 'string') {
-        return car.batchNo === batchNumber;
-      } else if (car.batchNo && car.batchNo._id) {
-        // If batchNo is populated object, check the batch number
-        const batch = batches.find(b => b._id === car.batchNo._id);
-        return batch && batch.batchNo === batchNumber;
-      }
-      return false;
+      return car.batchNo === batchNumber;
     }) as Car[];
   };
 
@@ -132,7 +124,7 @@ export default function InventoryPage() {
     <MainLayout>
       <div className="flex min-h-screen">
         {/* Main Content fills all remaining space */}
-        <div className="flex-1 flex flex-col space-y-6 p-3">
+        <div className="flex-1 flex flex-col space-y-2 pt-4">
           {/* Header Section with Page Name and Add Button */}
           <div className="flex items-center justify-between">
             <h1 
@@ -152,7 +144,7 @@ export default function InventoryPage() {
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2.5 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               style={{
-                width: '148px',
+                width: '158px',
                 height: '50px',
                 borderRadius: '50px',
                 paddingTop: '10px',
@@ -165,21 +157,23 @@ export default function InventoryPage() {
               }}
             >
               <Plus className="h-4 w-4" />
-              Add New Batch
+              Create Batch
             </Button>
           </div>
 
           {/* Batch Sections */}
           {uniqueBatches.length > 0 ? (
-            uniqueBatches.map((batchNumber) => {
+            uniqueBatches.map((batchNumber, index) => {
               const batchCars = getCarsForBatch(batchNumber);
               console.log(`Rendering batch ${batchNumber} with ${batchCars.length} cars`);
+              
               return (
                 <BatchCarsSection 
                   key={batchNumber}
                   batchTitle={`Batch ${batchNumber}`} 
                   batchNumber={batchNumber} 
-                  cars={batchCars} 
+                  cars={batchCars}
+                  isLatestBatch={index === 0}
                 />
               );
             })

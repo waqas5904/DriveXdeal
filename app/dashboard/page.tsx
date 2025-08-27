@@ -147,6 +147,7 @@ export default function DashboardPage() {
         // Expand the clicked batch
         newState[batchNumber] = false;
         return newState;
+        
       });
     }
   };
