@@ -30,7 +30,7 @@ export default function TransitPage() {
       setError(null);
       
       // Fetch cars with transit status
-      const carsResponse = await carAPI.getAll({ status: 'transit' });
+      const carsResponse = await carAPI.getAll({ status: 'in_transit' });
       
       if (carsResponse.success) {
         setCars(carsResponse.data);
@@ -48,17 +48,30 @@ export default function TransitPage() {
   // Filter cars by transit status for a specific batch
   const getTransitCarsForBatch = (batchNumber: string) => {
     return cars.filter((car: any) => {
-      return car.batchNo === batchNumber;
+      // Check if car belongs to this batch
+      if (typeof car.batchNo === 'string') {
+        return car.batchNo === batchNumber;
+      } else if (car.batchNo && car.batchNo.batchNo) {
+        return car.batchNo.batchNo === batchNumber;
+      }
+      return false;
     }) as Car[];
   };
 
   // Get unique batch numbers that have transit cars
   const getUniqueBatchesWithTransitCars = () => {
-    const batchNumbers = [...new Set(cars.map((car: any) => car.batchNo).filter(Boolean))];
+    const batchNumbers = [...new Set(cars.map((car: any) => {
+      if (typeof car.batchNo === 'string') {
+        return car.batchNo;
+      } else if (car.batchNo && car.batchNo.batchNo) {
+        return car.batchNo.batchNo;
+      }
+      return null;
+    }).filter(Boolean))];
     return batchNumbers.sort((a, b) => {
       // Extract numbers from batch numbers for proper sorting
-      const numA = parseInt(a);
-      const numB = parseInt(b);
+      const numA = parseInt(a.replace(/\D/g, ''));
+      const numB = parseInt(b.replace(/\D/g, ''));
       return numB - numA; // Sort descending (latest first)
     });
   };
@@ -72,9 +85,7 @@ export default function TransitPage() {
   const currentBatches = uniqueBatches.slice(startIndex, endIndex);
 
   const handleAddNewCar = () => {
-    // Navigate to add car page with a default batch number
-    // You can change this to any default batch number you prefer
-    router.push('/cars/inventory/01/add-car');
+    router.push('/cars/inventory/5/add-car?from=transit');
   };
 
   const handlePageChange = (page: number) => {
@@ -142,7 +153,7 @@ export default function TransitPage() {
   return (
     <MainLayout>
       <div className="flex min-h-screen">
-        <div className="flex-1 flex flex-col space-y-2 pt-4">
+        <div className="flex-1 flex flex-col space-y-6 p-4">
           {/* Header Section with Page Name and Add Button */}
           <div className="flex items-center justify-between">
             <h1 
@@ -166,10 +177,10 @@ export default function TransitPage() {
                 height: '50px',
                 borderRadius: '50px',
                 paddingTop: '10px',
-                paddingRight: '10px',
+                paddingRight: '18px',
                 paddingBottom: '10px',
-                paddingLeft: '10px',
-                gap: '5px',
+                paddingLeft: '18px',
+                gap: '10px',
                 borderWidth: '1px',
                 opacity: 1
               }}
@@ -182,19 +193,12 @@ export default function TransitPage() {
           {/* Batch Sections */}
           {currentBatches.map((batchNumber) => {
             const batchCars = getTransitCarsForBatch(batchNumber);
-            
-            // Calculate delivery timeframe from cars in this batch
-            const deliveryTimeframe = batchCars.length > 0 
-              ? (batchCars[0] as any)?.deliveryTimeframe || "34" 
-              : "34";
-            
             return (
               <BatchCarsSection 
                 key={batchNumber}
-                batchTitle={`Batch ${batchNumber}`} 
+                batchTitle={`Batch 0${batchNumber}`} 
                 batchNumber={batchNumber} 
-                cars={batchCars}
-                deliveryTimeframe={deliveryTimeframe}
+                cars={batchCars} 
               />
             );
           })}
